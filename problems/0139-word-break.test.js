@@ -4,27 +4,17 @@
  * @return {boolean}
  */
 var wordBreak = function (s, wordDict) {
-  const dict = parseDict(wordDict);
-  if (dict.length === 0) return false;
-  const longestWordLength = dict.reduce((length, word) => Math.max(length, word.length), 0);
-  const repetitionsRemoved = dict.reduce((result, word) => {
-    const repetitionsToKeep = Math.ceil(longestWordLength / word.length);
-    const regexp = new RegExp(`(?:${word}){${repetitionsToKeep}}((?:${word})+)(?:${word}){${repetitionsToKeep}}`, "g");
-    const matches = [...result.matchAll(regexp)];
-    return matches.reduce((removed, match) => removed.replace(match[1], ""), result);
-  }, s);
-  return recursiveBreak(repetitionsRemoved, dict);
+  const breaks = [true, ...Array.from(s).fill(false)];
+  for (let endIndex = 1; endIndex < breaks.length; endIndex++) {
+    for (let startIndex = 0; startIndex < endIndex; startIndex++) {
+      if (breaks[startIndex] && wordDict.includes(s.substring(startIndex, endIndex))) {
+        breaks[endIndex] = true;
+        break;
+      }
+    }
+  }
+  return breaks[s.length];
 };
-
-function recursiveBreak(s, wordDict) {
-  if (wordDict.includes(s)) return true;
-  const wordsStartWith = wordDict.filter(word => s.startsWith(word));
-  return wordsStartWith.some(word => recursiveBreak(s.slice(word.length), wordDict));
-}
-
-function parseDict(wordDict) {
-  return wordDict.filter(currentWord => !wordDict.some(pattern => new RegExp(`^(${pattern}){2,}$`).test(currentWord)));
-}
 
 describe("139. Word Break", () => {
   test("leetcode", () => expect(wordBreak("leetcode", ["leet", "code"])).toBe(true));
