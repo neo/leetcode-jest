@@ -4,16 +4,19 @@
  * @return {boolean}
  */
 var wordBreak = function (s, wordDict) {
-  const breaks = [true, ...Array.from(s).fill(false)];
-  for (let endIndex = 1; endIndex < breaks.length; endIndex++) {
-    for (let startIndex = 0; startIndex < endIndex; startIndex++) {
-      if (breaks[startIndex] && wordDict.includes(s.substring(startIndex, endIndex))) {
-        breaks[endIndex] = true;
-        break;
-      }
-    }
+  const memo = {};
+  function recursiveBreak(s) {
+    if (!s.length) return false;
+    if (s in memo) return memo[s];
+    if (wordDict.includes(s)) return (memo[s] = true);
+    return (memo[s] = wordDict.some(word => {
+      if (!s.startsWith(word)) return false;
+      const newS = s.slice(word.length);
+      if (newS in memo) return memo[newS];
+      return (memo[newS] = recursiveBreak(newS, wordDict));
+    }));
   }
-  return breaks[s.length];
+  return recursiveBreak(s, wordDict);
 };
 
 describe("139. Word Break", () => {
