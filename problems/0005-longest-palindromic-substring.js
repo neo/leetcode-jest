@@ -5,23 +5,27 @@
 var longestPalindrome = function (s) {
   if (s.length <= 1) return s;
 
-  const memo = {};
-  function isPalindromic(potential) {
-    if (potential in memo) return memo[potential];
-    if (potential.length <= 1) return (memo[potential] = true);
-    if (potential[0] !== potential[potential.length - 1]) return (memo[potential] = false);
-    return (memo[potential] = isPalindromic(potential.slice(1, potential.length - 1)));
+  let longest = s[0];
+
+  function growPalindrome(fromIndex, fromGap) {
+    let start = fromIndex - 1;
+    let end = fromIndex + fromGap;
+    let localLongest = s[fromIndex];
+    while (s[start] !== undefined && s[start] === s[end]) {
+      localLongest = s.slice(start, end + 1);
+      start--;
+      end++;
+    }
+    return localLongest;
   }
 
-  let longest = s[0];
-  for (let start = 0; start <= s.length - 2; start++) {
-    for (let end = s.length; end >= start + 2; end--) {
-      const potential = s.slice(start, end);
-      if (potential.length > longest.length && isPalindromic(potential)) {
-        longest = potential;
-      }
-    }
+  for (let i = 1; i < s.length; i++) {
+    const fromGap = growPalindrome(i, true);
+    const fromChar = growPalindrome(i, false);
+    if (fromGap.length > longest.length) longest = fromGap;
+    if (fromChar.length > longest.length) longest = fromChar;
   }
+
   return longest;
 };
 
@@ -31,4 +35,5 @@ describe("5. Longest Palindromic Substring", () => {
   test("a", () => expect(longestPalindrome("a")).toBe("a"));
   test("ac", () => expect(longestPalindrome("ac")).toBe("a"));
   test("", () => expect(longestPalindrome("")).toBe(""));
+  test("bb", () => expect(longestPalindrome("bb")).toBe("bb"));
 });
