@@ -7,10 +7,10 @@ var longestPalindrome = function (s) {
 
   const expanded = `#${s.split("").join("#")}#`;
 
-  function growPalindrome(fromIndex, fromLength = 1) {
-    let start = fromIndex - fromLength;
-    let end = fromIndex + fromLength;
-    let localLongest = expanded[fromIndex];
+  function growPalindrome(fromIndex, fromLength) {
+    let start = fromIndex - 1 - fromLength;
+    let end = fromIndex + 1 + fromLength;
+    let localLongest = expanded.slice(start + 1, end);
     while (expanded[start] !== undefined && expanded[start] === expanded[end]) {
       localLongest = expanded.slice(start, end + 1);
       start--;
@@ -19,11 +19,17 @@ var longestPalindrome = function (s) {
     return localLongest;
   }
 
-  const p = Array.from(expanded, (_, index) => growPalindrome(index).length);
-  const maxIndex = p.reduce((max, current, index) => (p[max] < current ? index : max), 0);
-  const longestLength = (p[maxIndex] - 1) / 2;
-  const longestStart = (maxIndex - longestLength) / 2;
-  return s.slice(longestStart, longestStart + longestLength);
+  const p = Array.from(expanded, () => 0);
+  for (let i = 0, knownRange = 0; i < p.length; i++) {
+    const len = (growPalindrome(i, p[i]).length - 1) / 2;
+    knownRange = i + len;
+    for (let j = 1; j <= len; j++) {
+      if (i + j + p[i - j] <= knownRange) p[i + j] = p[i - j];
+    }
+    p[i] = len;
+  }
+  const maxLengthIndex = p.reduce((max, current, index) => (p[max] < current ? index : max), 0);
+  return s.substr((maxLengthIndex - p[maxLengthIndex]) / 2, p[maxLengthIndex]);
 };
 
 describe("5. Longest Palindromic Substring", () => {
