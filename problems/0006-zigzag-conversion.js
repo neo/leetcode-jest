@@ -6,14 +6,15 @@
 var convert = function (s, numRows) {
   if (numRows === 1 || s.length <= numRows) return s;
 
-  const table = Array.from({ length: numRows }, () => []);
-  const group = 2 * numRows - 2;
-  Array.from(s).forEach((char, index) => {
-    const mod = index % group;
-    const row = mod < numRows ? mod : group - mod;
-    table[row].push(char);
-  });
-  return table.flat().join("");
+  const rows = Array.from({ length: numRows }, () => "");
+  let row = 0,
+    step = -1;
+  for (const char of s) {
+    rows[row] += char;
+    if (row === 0 || row === numRows - 1) step *= -1;
+    row += step;
+  }
+  return rows.join("");
 };
 
 describe("6. ZigZag Conversion", () => {
